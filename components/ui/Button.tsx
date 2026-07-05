@@ -81,7 +81,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   destructive: {
-    backgroundColor: Colors.destructive,
+    borderWidth: 1.5,
+    borderColor: Colors.destructive,
   },
   pressed: {
     opacity: 0.9,
@@ -97,5 +98,5 @@ const styles = StyleSheet.create({
   secondaryText: { color: Colors.secondaryForeground },
   outlineText: { color: Colors.foreground },
   ghostText: { color: Colors.primary },
-  destructiveText: { color: Colors.destructiveForeground },
+  destructiveText: { color: Colors.destructive },
 });

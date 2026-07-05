@@ -5,8 +5,8 @@ App mobile (Expo / React Native) da plataforma de fretes em Angola.
 ## Stack
 
 - **Expo Router** — navegação
-- **Supabase** — auth, profiles, fretes, notificações, avaliações
-- **Zustand** — sessão / perfil em memória
+- **Supabase** — base de dados (profiles, fretes, notificações, avaliações)
+- **Zustand + AsyncStorage** — sessão local
 - **TanStack Query** — queries e mutations
 
 ## Cores
@@ -18,8 +18,8 @@ App mobile (Expo / React Native) da plataforma de fretes em Angola.
 ## Setup
 
 1. Cria um projeto em [supabase.com](https://supabase.com)
-2. Em **Authentication → Providers → Email**, desativa **Confirm email**
-3. No SQL Editor, corre `supabase/schema.sql` (tabelas + confirmação automática de email)
+2. No SQL Editor, corre `supabase/schema.sql`
+3. Se já tinhas o schema antigo com Supabase Auth, corre também `supabase/migrate-no-auth.sql`
 4. Copia `.env.example` para `.env` e preenche:
 
 ```env
@@ -33,6 +33,10 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 npm install
 npx expo start
 ```
+
+## Autenticação
+
+Login e registo usam **apenas a tabela `profiles`**. A senha é guardada com **hash bcrypt** (`senha_hash`) — nunca em texto plano.
 
 ## Primeiro admin
 

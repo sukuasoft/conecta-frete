@@ -1,4 +1,4 @@
--- ConectaFrete — schema para Supabase
+-- ConectaFrete — schema para Supabase (apenas DB, sem Supabase Auth)
 -- Cola no SQL Editor do projeto e executa tudo de uma vez.
 
 -- ---------------------------------------------------------------------------
@@ -25,9 +25,10 @@ create type public.notificacao_tipo as enum ('info', 'sucesso', 'alerta', 'statu
 -- ---------------------------------------------------------------------------
 
 create table public.profiles (
-  id uuid primary key references auth.users (id) on delete cascade,
+  id uuid primary key default gen_random_uuid(),
   nome text not null,
-  email text not null,
+  email text not null unique,
+  senha_hash text not null,
   tipo public.user_tipo not null default 'cliente',
   telefone text,
   cidade text,
@@ -94,7 +95,6 @@ create table public.notificacoes (
 -- ---------------------------------------------------------------------------
 
 create index idx_profiles_tipo on public.profiles (tipo);
-create index idx_profiles_email on public.profiles (email);
 create index idx_profiles_motoristas_disponiveis
   on public.profiles (disponivel, bloqueado)
   where tipo = 'motorista';

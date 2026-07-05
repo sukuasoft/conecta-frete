@@ -60,11 +60,13 @@ export default function PerfilScreen() {
         </View>
         <Text style={styles.name}>{profile.nome}</Text>
         <Text style={styles.email}>{profile.email}</Text>
+       <View style={styles.center}>
         <Badge
-          label={profile.tipo}
-          bg={Colors.primary}
-          color={Colors.primaryForeground}
-        />
+            label={profile.tipo}
+            bg={Colors.primary}
+            color={Colors.primaryForeground}
+          />
+       </View>
         {profile.bloqueado && (
           <Text style={styles.blocked}>Conta bloqueada</Text>
         )}
@@ -113,6 +115,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  center: {
+    alignItems: 'center',
   },
   initials: {
     color: Colors.primaryForeground,

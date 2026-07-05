@@ -1,6 +1,17 @@
 import { haversineKm } from '@/lib/angola';
+import { hashPassword, verifyPassword } from '@/lib/password';
 import { supabase } from '@/lib/supabase';
 import type { Profile, UserTipo } from '@/lib/types';
+
+type ProfileRow = Profile & { senha_hash: string };
+
+const PROFILE_FIELDS =
+  'id, nome, email, tipo, telefone, cidade, provincia, bio, veiculo, capacidade_kg, disponivel, matricula, lat, lng, avaliacao_media, bloqueado, onboarding_feito, criado_em';
+
+function stripHash(row: ProfileRow): Profile {
+  const { senha_hash: _, ...profile } = row;
+  return profile;
+}
 
 export interface RegisterInput {
   nome: string;
@@ -17,45 +28,66 @@ export interface RegisterInput {
 }
 
 export async function login(email: string, password: string) {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase
+    .from('profiles')
+    .select(`${PROFILE_FIELDS}, senha_hash`)
+    .eq('email', email.trim().toLowerCase())
+    .maybeSingle();
+
   if (error) throw error;
-  return data;
+  if (!data || !verifyPassword(password, data.senha_hash)) {
+    throw new Error('Credenciais inválidas');
+  }
+  if (data.bloqueado) {
+    throw new Error('Conta bloqueada.');
+  }
+
+  return stripHash(data as ProfileRow);
 }
 
 export async function register(input: RegisterInput) {
-  const { data: authData, error: authError } = await supabase.auth.signUp({
-    email: input.email,
-    password: input.password,
-  });
-  if (authError) throw authError;
-  if (!authData.user) throw new Error('Falha ao criar conta.');
+  const email = input.email.trim().toLowerCase();
 
-  const profile: Omit<Profile, 'criado_em'> & { criado_em?: string } = {
-    id: authData.user.id,
-    nome: input.nome,
-    email: input.email.toLowerCase(),
-    tipo: input.tipo,
-    telefone: input.telefone ?? null,
-    cidade: input.cidade ?? null,
-    provincia: input.provincia ?? null,
-    lat: input.lat ?? -8.839,
-    lng: input.lng ?? 13.2894,
-    veiculo: input.veiculo ?? null,
-    capacidade_kg: input.capacidade_kg ?? null,
-    disponivel: input.tipo === 'motorista' ? true : null,
-    avaliacao_media: input.tipo === 'motorista' ? 5 : null,
-    bloqueado: false,
-    onboarding_feito: false,
-  };
+  const { data: existing } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('email', email)
+    .maybeSingle();
 
-  const { error: profileError } = await supabase.from('profiles').insert(profile);
-  if (profileError) throw profileError;
+  if (existing) throw new Error('E-mail já registado.');
 
-  return authData;
+  const { data, error } = await supabase
+    .from('profiles')
+    .insert({
+      nome: input.nome,
+      email,
+      senha_hash: hashPassword(input.password),
+      tipo: input.tipo,
+      telefone: input.telefone ?? null,
+      cidade: input.cidade ?? null,
+      provincia: input.provincia ?? null,
+      lat: input.lat ?? -8.839,
+      lng: input.lng ?? 13.2894,
+      veiculo: input.veiculo ?? null,
+      capacidade_kg: input.capacidade_kg ?? null,
+      disponivel: input.tipo === 'motorista' ? true : null,
+      avaliacao_media: input.tipo === 'motorista' ? 5 : null,
+      bloqueado: false,
+      onboarding_feito: false,
+    })
+    .select(PROFILE_FIELDS)
+    .single();
+
+  if (error) throw error;
+  return data as Profile;
 }
 
 export async function fetchProfile(userId: string) {
-  const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
+  const { data, error } = await supabase
+    .from('profiles')
+    .select(PROFILE_FIELDS)
+    .eq('id', userId)
+    .single();
   if (error) throw error;
   return data as Profile;
 }
@@ -65,14 +97,14 @@ export async function updateProfile(userId: string, patch: Partial<Profile>) {
     .from('profiles')
     .update(patch)
     .eq('id', userId)
-    .select()
+    .select(PROFILE_FIELDS)
     .single();
   if (error) throw error;
   return data as Profile;
 }
 
 export async function fetchProfiles(opts?: { tipo?: UserTipo }) {
-  let q = supabase.from('profiles').select('*').order('criado_em', { ascending: false });
+  let q = supabase.from('profiles').select(PROFILE_FIELDS).order('criado_em', { ascending: false });
   if (opts?.tipo) q = q.eq('tipo', opts.tipo);
   const { data, error } = await q;
   if (error) throw error;
@@ -82,7 +114,7 @@ export async function fetchProfiles(opts?: { tipo?: UserTipo }) {
 export async function fetchMotoristasDisponiveis() {
   const { data, error } = await supabase
     .from('profiles')
-    .select('*')
+    .select(PROFILE_FIELDS)
     .eq('tipo', 'motorista')
     .eq('disponivel', true)
     .eq('bloqueado', false);
@@ -107,17 +139,20 @@ export async function createAdminProfile(input: {
   password: string;
   telefone?: string;
 }) {
-  const { data: authData, error: authError } = await supabase.auth.signUp({
-    email: input.email,
-    password: input.password,
-  });
-  if (authError) throw authError;
-  if (!authData.user) throw new Error('Falha ao criar admin.');
+  const email = input.email.trim().toLowerCase();
+
+  const { data: existing } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('email', email)
+    .maybeSingle();
+
+  if (existing) throw new Error('E-mail já registado.');
 
   const { error } = await supabase.from('profiles').insert({
-    id: authData.user.id,
     nome: input.nome,
-    email: input.email.toLowerCase(),
+    email,
+    senha_hash: hashPassword(input.password),
     tipo: 'admin',
     telefone: input.telefone ?? null,
     lat: -8.839,

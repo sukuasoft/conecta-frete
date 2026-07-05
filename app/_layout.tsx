@@ -6,7 +6,6 @@ import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 import 'react-native-reanimated';
 
 import { Colors } from '@/constants/theme';
-import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/authStore';
 
 const queryClient = new QueryClient({
@@ -33,20 +32,10 @@ const navTheme = {
 
 function AuthBootstrap({ children }: { children: React.ReactNode }) {
   const initialize = useAuthStore((s) => s.initialize);
-  const setSession = useAuthStore((s) => s.setSession);
-  const refreshProfile = useAuthStore((s) => s.refreshProfile);
 
   useEffect(() => {
     initialize();
-
-    const { data: sub } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
-      if (session?.user) await refreshProfile();
-      else useAuthStore.setState({ profile: null });
-    });
-
-    return () => sub.subscription.unsubscribe();
-  }, [initialize, setSession, refreshProfile]);
+  }, [initialize]);
 
   return <>{children}</>;
 }
