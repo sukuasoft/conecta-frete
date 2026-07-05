@@ -124,14 +124,14 @@ export function MotoristaDashboard({ user }: { user: Profile }) {
 
 const styles = StyleSheet.create({
   hello: { color: Colors.foreground, fontSize: 28, fontWeight: '800' },
-  sub: { color: Colors.mutedForeground, marginTop: 4 },
+  sub: { color: Colors.mutedForeground, marginTop: 4, fontSize: 15, lineHeight: 22 },
   stats: { flexDirection: 'row', gap: 12 },
   block: { gap: 10 },
   section: { color: Colors.foreground, fontSize: 18, fontWeight: '800' },
   empty: { color: Colors.mutedForeground },
   offer: { gap: 8 },
   rota: { color: Colors.foreground, fontWeight: '700', fontSize: 15 },
-  meta: { color: Colors.mutedForeground, fontSize: 12 },
+  meta: { color: Colors.mutedForeground, fontSize: 13, lineHeight: 18 },
   valor: { color: Colors.primary, fontWeight: '800', fontSize: 16 },
   actions: { flexDirection: 'row', gap: 10 },
   actionBtn: { flex: 1 },

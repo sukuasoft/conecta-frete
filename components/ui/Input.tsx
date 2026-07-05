@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.input,
     color: Colors.foreground,
     paddingHorizontal: 14,
-    fontSize: 15,
+    fontSize: 16,
   },
   inputError: {
     borderColor: Colors.destructive,

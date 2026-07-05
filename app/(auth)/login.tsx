@@ -82,12 +82,13 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginTop: 4,
   },
-  title: { color: Colors.foreground, fontSize: 24, fontWeight: '800' },
-  sub: { color: Colors.mutedForeground, marginBottom: 8 },
+  title: { color: Colors.foreground, fontSize: 26, fontWeight: '800' },
+  sub: { color: Colors.mutedForeground, marginBottom: 8, fontSize: 15, lineHeight: 22 },
   link: {
     color: Colors.mutedForeground,
     textAlign: 'center',
     marginTop: 8,
+    fontSize: 14,
   },
   linkBold: { color: Colors.primary, fontWeight: '700' },
 });

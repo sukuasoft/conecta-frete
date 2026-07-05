@@ -109,10 +109,10 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
-  title: { color: Colors.foreground, fontSize: 24, fontWeight: '800', marginTop: 12 },
-  sub: { color: Colors.mutedForeground, marginBottom: 4 },
+  title: { color: Colors.foreground, fontSize: 26, fontWeight: '800', marginTop: 12 },
+  sub: { color: Colors.mutedForeground, marginBottom: 4, fontSize: 15, lineHeight: 22 },
   tipos: { flexDirection: 'row', gap: 10 },
   tipoBtn: { flex: 1 },
-  link: { color: Colors.mutedForeground, textAlign: 'center', marginTop: 8 },
+  link: { color: Colors.mutedForeground, textAlign: 'center', marginTop: 8, fontSize: 14 },
   linkBold: { color: Colors.primary, fontWeight: '700' },
 });

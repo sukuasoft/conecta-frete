@@ -59,9 +59,12 @@ const styles = StyleSheet.create({
   title: { color: Colors.foreground, fontSize: 22, fontWeight: '800' },
   small: { minHeight: 36 },
   empty: { color: Colors.mutedForeground },
-  item: { gap: 4, marginBottom: 4 },
-  unread: { borderColor: Colors.primary },
-  itemTitle: { color: Colors.foreground, fontWeight: '700' },
-  msg: { color: Colors.mutedForeground, fontSize: 13 },
-  meta: { color: Colors.mutedForeground, fontSize: 11 },
+  item: { gap: 6, marginBottom: 4 },
+  unread: {
+    borderColor: Colors.primary,
+    backgroundColor: Colors.accentMuted,
+  },
+  itemTitle: { color: Colors.foreground, fontWeight: '700', fontSize: 15 },
+  msg: { color: Colors.foreground, fontSize: 14, lineHeight: 20, opacity: 0.85 },
+  meta: { color: Colors.mutedForeground, fontSize: 12 },
 });

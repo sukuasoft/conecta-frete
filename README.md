@@ -11,8 +11,9 @@ App mobile (Expo / React Native) da plataforma de fretes em Angola.
 
 ## Cores
 
-- Fundo: `#141c17`
-- Destaque / texto: `#bcdbc5`
+- Fundo: `#0e1010` (neutro escuro)
+- Texto: `#f2f4f3` (alto contraste)
+- Destaque: `#4caf73` (verde — botões e links)
 
 ## Setup
 

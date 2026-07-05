@@ -125,7 +125,7 @@ export function AdminDashboard({ user }: { user: Profile }) {
 
 const styles = StyleSheet.create({
   hello: { color: Colors.foreground, fontSize: 28, fontWeight: '800' },
-  sub: { color: Colors.mutedForeground, marginTop: 4 },
+  sub: { color: Colors.mutedForeground, marginTop: 4, fontSize: 15, lineHeight: 22 },
   stats: { flexDirection: 'row', gap: 12 },
   block: { gap: 10 },
   section: { color: Colors.foreground, fontSize: 18, fontWeight: '800' },
@@ -133,6 +133,6 @@ const styles = StyleSheet.create({
   chip: { minHeight: 36, paddingHorizontal: 12 },
   userRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   userName: { color: Colors.foreground, fontWeight: '700' },
-  meta: { color: Colors.mutedForeground, fontSize: 12 },
+  meta: { color: Colors.mutedForeground, fontSize: 13, lineHeight: 18 },
   smallBtn: { minHeight: 36, paddingHorizontal: 10 },
 });

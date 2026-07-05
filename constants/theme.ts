@@ -1,28 +1,29 @@
 /**
- * ConectaFrete — cores principais: #141c17 (fundo) e #bcdbc5 (destaque)
+ * ConectaFrete — tema escuro com verde como acento (não como cor de texto global)
  */
 
 export const Colors = {
-  background: '#141c17',
-  foreground: '#bcdbc5',
-  card: '#1a2420',
-  cardElevated: '#1f2b25',
-  muted: '#24302a',
-  mutedForeground: '#8aa894',
-  border: '#2a3a32',
-  primary: '#bcdbc5',
-  primaryForeground: '#141c17',
-  secondary: '#1f2b25',
-  secondaryForeground: '#bcdbc5',
-  destructive: '#e07070',
-  destructiveForeground: '#141c17',
-  success: '#6bc48a',
-  successForeground: '#141c17',
-  warning: '#d4b86a',
-  warningForeground: '#141c17',
-  overlay: 'rgba(20, 28, 23, 0.85)',
-  input: '#1a2420',
-  ring: '#bcdbc5',
+  background: '#0e1010',
+  foreground: '#f2f4f3',
+  card: '#181b1a',
+  cardElevated: '#222625',
+  muted: '#2a2f2d',
+  mutedForeground: '#9aa3a0',
+  border: '#343a38',
+  primary: '#4caf73',
+  primaryForeground: '#0a120e',
+  secondary: '#222625',
+  secondaryForeground: '#e8ecea',
+  destructive: '#ef6b6b',
+  destructiveForeground: '#fff5f5',
+  success: '#3dd68c',
+  successForeground: '#0a120e',
+  warning: '#e8b84a',
+  warningForeground: '#1a1408',
+  overlay: 'rgba(14, 16, 16, 0.9)',
+  input: '#222625',
+  ring: '#4caf73',
+  accentMuted: 'rgba(76, 175, 115, 0.14)',
 } as const;
 
 export const Spacing = {
@@ -39,3 +40,12 @@ export const Radius = {
   lg: 16,
   full: 999,
 } as const;
+
+export const Typography = {
+  title: { fontSize: 28, fontWeight: '800' as const, color: Colors.foreground },
+  section: { fontSize: 18, fontWeight: '800' as const, color: Colors.foreground },
+  body: { fontSize: 15, fontWeight: '400' as const, color: Colors.foreground },
+  label: { fontSize: 13, fontWeight: '600' as const, color: Colors.foreground },
+  caption: { fontSize: 12, fontWeight: '400' as const, color: Colors.mutedForeground },
+  meta: { fontSize: 11, fontWeight: '500' as const, color: Colors.mutedForeground },
+};

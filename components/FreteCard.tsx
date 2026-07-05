@@ -101,16 +101,18 @@ const styles = StyleSheet.create({
   valor: {
     color: Colors.primary,
     fontWeight: '800',
-    fontSize: 15,
+    fontSize: 16,
   },
   rota: {
     color: Colors.foreground,
     fontSize: 15,
     fontWeight: '600',
+    lineHeight: 22,
   },
   meta: {
     color: Colors.mutedForeground,
-    fontSize: 12,
+    fontSize: 13,
+    lineHeight: 18,
   },
   progressWrap: { gap: 6 },
   progressTrack: {

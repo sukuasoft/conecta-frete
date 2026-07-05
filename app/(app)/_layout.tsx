@@ -20,11 +20,14 @@ export default function AppLayout() {
         headerTintColor: Colors.foreground,
         headerTitleStyle: { fontWeight: '800' },
         tabBarStyle: {
-          backgroundColor: Colors.card,
+          backgroundColor: Colors.cardElevated,
           borderTopColor: Colors.border,
+          height: 60,
+          paddingBottom: 8,
         },
         tabBarActiveTintColor: Colors.primary,
         tabBarInactiveTintColor: Colors.mutedForeground,
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
       }}
     >
       <Tabs.Screen

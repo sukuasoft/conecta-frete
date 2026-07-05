@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
     borderWidth: 1,
     borderColor: Colors.border,
-    backgroundColor: Colors.card,
+    backgroundColor: Colors.input,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
   },
   chipText: {
-    color: Colors.mutedForeground,
+    color: Colors.foreground,
     fontSize: 13,
     fontWeight: '600',
   },

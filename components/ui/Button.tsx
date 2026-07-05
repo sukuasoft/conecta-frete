@@ -43,7 +43,11 @@ export function Button({
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === 'primary' || variant === 'destructive' ? Colors.primaryForeground : Colors.primary}
+          color={
+            variant === 'primary' || variant === 'destructive'
+              ? Colors.primaryForeground
+              : Colors.foreground
+          }
         />
       ) : (
         <Text style={[styles.text, styles[`${variant}Text` as const]]}>{title}</Text>
@@ -71,7 +75,7 @@ const styles = StyleSheet.create({
   outline: {
     backgroundColor: 'transparent',
     borderWidth: 1.5,
-    borderColor: Colors.primary,
+    borderColor: Colors.border,
   },
   ghost: {
     backgroundColor: 'transparent',
@@ -80,12 +84,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.destructive,
   },
   pressed: {
-    opacity: 0.88,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    elevation: 4,
+    opacity: 0.9,
   },
   disabled: {
     opacity: 0.5,
@@ -96,7 +95,7 @@ const styles = StyleSheet.create({
   },
   primaryText: { color: Colors.primaryForeground },
   secondaryText: { color: Colors.secondaryForeground },
-  outlineText: { color: Colors.primary },
-  ghostText: { color: Colors.foreground },
+  outlineText: { color: Colors.foreground },
+  ghostText: { color: Colors.primary },
   destructiveText: { color: Colors.destructiveForeground },
 });

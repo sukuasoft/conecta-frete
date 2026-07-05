@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.6,
   },
-  labelHi: { color: Colors.primaryForeground, opacity: 0.75 },
+  labelHi: { color: Colors.primaryForeground, opacity: 0.8 },
   value: {
     color: Colors.foreground,
     fontSize: 22,
@@ -40,5 +40,5 @@ const styles = StyleSheet.create({
   },
   valueHi: { color: Colors.primaryForeground },
   sub: { color: Colors.mutedForeground, fontSize: 11 },
-  subHi: { color: Colors.primaryForeground, opacity: 0.7 },
+  subHi: { color: Colors.primaryForeground, opacity: 0.75 },
 });

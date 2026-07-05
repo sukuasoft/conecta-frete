@@ -147,7 +147,7 @@ export function ClienteDashboard({ user }: { user: Profile }) {
 
 const styles = StyleSheet.create({
   hello: { color: Colors.foreground, fontSize: 28, fontWeight: '800' },
-  sub: { color: Colors.mutedForeground, marginTop: 4 },
+  sub: { color: Colors.mutedForeground, marginTop: 4, fontSize: 15, lineHeight: 22 },
   stats: { flexDirection: 'row', gap: 12 },
   form: { gap: 14 },
   label: { color: Colors.foreground, fontSize: 13, fontWeight: '600' },
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   tipoBtn: { minHeight: 36, paddingHorizontal: 12 },
   row: { flexDirection: 'row', gap: 12 },
   half: { flex: 1 },
-  preview: { color: Colors.mutedForeground, fontSize: 13 },
+  preview: { color: Colors.mutedForeground, fontSize: 14, lineHeight: 20 },
   block: { gap: 10 },
   empty: { color: Colors.mutedForeground },
   footer: { color: Colors.mutedForeground, fontSize: 13 },
