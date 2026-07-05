@@ -7,19 +7,25 @@ import { Screen } from '@/components/ui/Screen';
 import { Colors } from '@/constants/theme';
 import { formatKz, haversineKm } from '@/lib/angola';
 import type { Profile } from '@/lib/types';
+import { useAuth } from '@/hooks/useAuth';
 import {
   useAceitarFrete,
+  useConcluirFrete,
   useFretesMotorista,
+  useIniciarViagem,
   useOfertas,
   useRejeitarFrete,
 } from '@/hooks/useFretes';
 import { useUpdateProfile } from '@/hooks/useProfiles';
 
 export function MotoristaDashboard({ user }: { user: Profile }) {
+  const { refreshProfile } = useAuth();
   const { data: ofertas = [], isLoading: loadingOfertas } = useOfertas(user.id);
   const { data: meus = [], isLoading: loadingMeus } = useFretesMotorista(user.id);
   const aceitar = useAceitarFrete();
   const rejeitar = useRejeitarFrete();
+  const iniciarViagem = useIniciarViagem();
+  const concluirFrete = useConcluirFrete();
   const updateProfile = useUpdateProfile();
 
   const ativo = meus.find((f) => f.status === 'aceito' || f.status === 'em_transito');
@@ -62,6 +68,35 @@ export function MotoristaDashboard({ user }: { user: Profile }) {
         <View style={styles.block}>
           <Text style={styles.section}>Entrega em andamento</Text>
           <FreteCard frete={ativo} viewerId={user.id} />
+          {ativo.status === 'aceito' && (
+            <Button
+              title="Iniciar viagem"
+              loading={iniciarViagem.isPending}
+              onPress={async () => {
+                try {
+                  await iniciarViagem.mutateAsync(ativo.id);
+                  Alert.alert('Em trânsito', 'Viagem iniciada. Boa entrega!');
+                } catch (e: any) {
+                  Alert.alert('Erro', e.message);
+                }
+              }}
+            />
+          )}
+          {ativo.status === 'em_transito' && (
+            <Button
+              title="Entrega concluída"
+              loading={concluirFrete.isPending}
+              onPress={async () => {
+                try {
+                  await concluirFrete.mutateAsync({ freteId: ativo.id, motoristaId: user.id });
+                  await refreshProfile();
+                  Alert.alert('Concluído', 'Frete entregue. Já podes ficar online outra vez.');
+                } catch (e: any) {
+                  Alert.alert('Erro', e.message);
+                }
+              }}
+            />
+          )}
         </View>
       )}
 

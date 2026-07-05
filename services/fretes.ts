@@ -148,6 +148,16 @@ export async function aceitarFrete(freteId: string, motoristaId: string) {
   return frete;
 }
 
+export async function iniciarViagem(freteId: string) {
+  return atualizarFrete(freteId, { status: 'em_transito', progresso: 50 });
+}
+
+export async function concluirFrete(freteId: string, motoristaId: string) {
+  const frete = await atualizarFrete(freteId, { status: 'concluido', progresso: 100 });
+  await supabase.from('profiles').update({ disponivel: true }).eq('id', motoristaId);
+  return frete;
+}
+
 export async function rejeitarFrete(freteId: string, motoristaId: string) {
   const { data: frete, error: fetchError } = await supabase
     .from('fretes')

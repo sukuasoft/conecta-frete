@@ -3,9 +3,11 @@ import {
   aceitarFrete,
   atualizarFrete,
   avaliarMotorista,
+  concluirFrete,
   criarFrete,
   fetchAllFretes,
   fetchFretes,
+  iniciarViagem,
   jaAvaliado,
   rejeitarFrete,
   type CriarFreteInput,
@@ -87,6 +89,30 @@ export function useAtualizarFrete() {
       atualizarFrete(id, patch),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['fretes'] });
+      qc.invalidateQueries({ queryKey: ['notificacoes'] });
+    },
+  });
+}
+
+export function useIniciarViagem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (freteId: string) => iniciarViagem(freteId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['fretes'] });
+      qc.invalidateQueries({ queryKey: ['notificacoes'] });
+    },
+  });
+}
+
+export function useConcluirFrete() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ freteId, motoristaId }: { freteId: string; motoristaId: string }) =>
+      concluirFrete(freteId, motoristaId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['fretes'] });
+      qc.invalidateQueries({ queryKey: ['profiles'] });
       qc.invalidateQueries({ queryKey: ['notificacoes'] });
     },
   });
