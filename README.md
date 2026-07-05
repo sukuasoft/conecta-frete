@@ -1,50 +1,65 @@
-# Welcome to your Expo app 👋
+# ConectaFrete App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+App mobile (Expo / React Native) da plataforma de fretes em Angola.
 
-## Get started
+## Stack
 
-1. Install dependencies
+- **Expo Router** — navegação
+- **Supabase** — auth, profiles, fretes, notificações, avaliações
+- **Zustand** — sessão / perfil em memória
+- **TanStack Query** — queries e mutations
 
-   ```bash
-   npm install
-   ```
+## Cores
 
-2. Start the app
+- Fundo: `#141c17`
+- Destaque / texto: `#bcdbc5`
 
-   ```bash
-   npx expo start
-   ```
+## Setup
 
-In the output, you'll find options to open the app in a
+1. Cria um projeto em [supabase.com](https://supabase.com)
+2. Em **Authentication → Providers → Email**, desativa **Confirm email**
+3. No SQL Editor, corre `supabase/schema.sql` (tabelas + confirmação automática de email)
+4. Copia `.env.example` para `.env` e preenche:
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```env
+EXPO_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+5. Instala e arranca:
 
-## Learn more
+```bash
+npm install
+npx expo start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+## Primeiro admin
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+1. Regista uma conta na app (cliente ou motorista)
+2. No SQL Editor do Supabase:
 
-## Join the community
+```sql
+update public.profiles set tipo = 'admin' where email = 'teu@email.com';
+```
 
-Join our community of developers creating universal apps.
+3. Faz logout/login na app
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Estrutura
+
+```
+app/                 # rotas (auth + tabs)
+components/          # UI e dashboards
+hooks/               # React Query hooks
+services/            # chamadas Supabase
+stores/              # Zustand
+lib/                 # supabase client, types, angola
+supabase/schema.sql  # schema das tabelas
+```
+
+## Papéis
+
+| Tipo       | Funções                                      |
+| ---------- | -------------------------------------------- |
+| Cliente    | Pedir frete, histórico, avaliar motorista    |
+| Motorista  | Online/offline, ofertas, aceitar/rejeitar    |
+| Admin      | Stats, broadcast, bloquear utilizadores      |
