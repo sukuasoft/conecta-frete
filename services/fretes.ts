@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { progressFromGps } from '@/lib/routing';
 import type { Frete, FreteStatus, Profile } from '@/lib/types';
 import { fetchMotoristasDisponiveis, matchMotoristas } from '@/services/profiles';
 import { createNotificacao } from '@/services/notificacoes';
@@ -148,8 +149,27 @@ export async function aceitarFrete(freteId: string, motoristaId: string) {
   return frete;
 }
 
+export async function fetchFreteById(id: string) {
+  const { data, error } = await supabase.from('fretes').select('*').eq('id', id).single();
+  if (error) throw error;
+  return data as Frete;
+}
+
 export async function iniciarViagem(freteId: string) {
-  return atualizarFrete(freteId, { status: 'em_transito', progresso: 50 });
+  return atualizarFrete(freteId, { status: 'em_transito', progresso: 8 });
+}
+
+export async function syncProgressoGps(
+  freteId: string,
+  gps: { lat: number; lng: number },
+  routePoints: { lat: number; lng: number }[],
+) {
+  const progresso = progressFromGps(routePoints, gps);
+  if (progresso < 8) return null;
+  return atualizarFrete(freteId, {
+    progresso: Math.min(99, Math.max(8, progresso)),
+    status: 'em_transito',
+  });
 }
 
 export async function concluirFrete(freteId: string, motoristaId: string) {

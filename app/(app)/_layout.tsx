@@ -58,6 +58,14 @@ export default function AppLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="percurso"
+        options={{
+          href: null,
+          title: 'Percurso',
+          headerShown: true,
+        }}
+      />
     </Tabs>
   );
 }

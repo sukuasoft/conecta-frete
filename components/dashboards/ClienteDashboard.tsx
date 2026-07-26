@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { CityPicker } from '@/components/CityPicker';
 import { FreteCard } from '@/components/FreteCard';
 import { FreteMap } from '@/components/FreteMap';
@@ -9,7 +10,8 @@ import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Screen } from '@/components/ui/Screen';
 import { Colors } from '@/constants/theme';
-import { CIDADES_ANGOLA, formatKz, haversineKm } from '@/lib/angola';
+import { CIDADES_ANGOLA, formatKz } from '@/lib/angola';
+import { fetchRoute } from '@/lib/routing';
 import type { Profile } from '@/lib/types';
 import { TIPOS_CARGA } from '@/lib/types';
 import { useCriarFrete, useMeusFretes } from '@/hooks/useFretes';
@@ -18,6 +20,7 @@ import { useMotoristasOnline } from '@/hooks/useProfiles';
 import { matchMotoristas } from '@/services/profiles';
 
 export function ClienteDashboard({ user }: { user: Profile }) {
+  const router = useRouter();
   const { data: fretes = [], isLoading } = useMeusFretes(user.id);
   const { data: motoristas = [] } = useMotoristasOnline();
   const { location: userLocation } = useLocation({ enabled: true });
@@ -28,6 +31,11 @@ export function ClienteDashboard({ user }: { user: Profile }) {
   const [tipoCarga, setTipoCarga] = useState('Geral');
   const [peso, setPeso] = useState('5000');
   const [valor, setValor] = useState('150000');
+  const [routeInfo, setRouteInfo] = useState<{
+    dist: number;
+    fallback: boolean;
+    durationMin: number | null;
+  } | null>(null);
 
   const ativo = fretes.find((f) => f.status === 'aceito' || f.status === 'em_transito');
   const concluidos = fretes.filter((f) => f.status === 'concluido');
@@ -36,13 +44,31 @@ export function ClienteDashboard({ user }: { user: Profile }) {
     const o = CIDADES_ANGOLA.find((c) => c.nome === origem);
     const d = CIDADES_ANGOLA.find((c) => c.nome === destino);
     if (!o || !d) return null;
-    const dist = haversineKm(o, d);
     const candidatos = matchMotoristas(
       { origem: o, peso_kg: Number(peso) || 0 },
       motoristas,
     );
-    return { o, d, dist, candidatos };
+    return { o, d, candidatos };
   }, [origem, destino, peso, motoristas]);
+
+  useEffect(() => {
+    if (!preview) {
+      setRouteInfo(null);
+      return;
+    }
+    let cancelled = false;
+    fetchRoute(preview.o, preview.d).then((r) => {
+      if (cancelled) return;
+      setRouteInfo({
+        dist: r.distanceKm,
+        fallback: r.fallback,
+        durationMin: r.durationMin,
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [preview?.o.nome, preview?.d.nome]);
 
   const solicitar = async () => {
     const o = CIDADES_ANGOLA.find((c) => c.nome === origem);
@@ -53,6 +79,7 @@ export function ClienteDashboard({ user }: { user: Profile }) {
       return;
     }
     try {
+      const route = await fetchRoute(o, d);
       const frete = await criar.mutateAsync({
         cliente_id: user.id,
         origem_endereco: o.nome,
@@ -66,11 +93,12 @@ export function ClienteDashboard({ user }: { user: Profile }) {
         tipo_carga: tipoCarga,
         peso_kg: Number(peso),
         valor: Number(valor),
-        distancia_km: Number(haversineKm(o, d).toFixed(1)),
+        distancia_km: route.distanceKm,
       });
       Alert.alert(
         'Frete criado',
-        `${(frete.candidatos ?? []).length} motoristas notificados.`,
+        `${(frete.candidatos ?? []).length} motoristas notificados` +
+          (route.fallback ? ' (distância aproximada em linha reta).' : '.'),
       );
     } catch (e: any) {
       Alert.alert('Erro', e.message ?? 'Não foi possível criar o frete');
@@ -96,7 +124,11 @@ export function ClienteDashboard({ user }: { user: Profile }) {
             frete={ativo}
             userLocation={userLocation}
             showUser
-            height={300}
+            height={280}
+            simulate={ativo.status === 'em_transito'}
+            onOpenFullscreen={() =>
+              router.push({ pathname: '/(app)/percurso', params: { id: ativo.id } })
+            }
           />
         </View>
       ) : (
@@ -138,9 +170,13 @@ export function ClienteDashboard({ user }: { user: Profile }) {
           </View>
         </View>
 
-        {preview && (
+        {preview && routeInfo && (
           <Text style={styles.preview}>
-            {preview.dist.toFixed(1)} km · {preview.candidatos.length} motoristas compatíveis
+            {routeInfo.dist.toFixed(1)} km
+            {routeInfo.fallback ? ' (aprox.)' : ' por estrada'}
+            {routeInfo.durationMin != null ? ` · ~${routeInfo.durationMin} min` : ''}
+            {' · '}
+            {preview.candidatos.length} motoristas compatíveis
           </Text>
         )}
 

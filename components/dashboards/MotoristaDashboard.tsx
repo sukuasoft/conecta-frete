@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { FreteCard } from '@/components/FreteCard';
 import { FreteMap } from '@/components/FreteMap';
 import { StatCard } from '@/components/StatCard';
@@ -8,6 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { Screen } from '@/components/ui/Screen';
 import { Colors } from '@/constants/theme';
 import { formatKz, haversineKm } from '@/lib/angola';
+import { fetchRoute } from '@/lib/routing';
 import type { Profile } from '@/lib/types';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -17,11 +19,13 @@ import {
   useIniciarViagem,
   useOfertas,
   useRejeitarFrete,
+  useSyncProgressoGps,
 } from '@/hooks/useFretes';
 import { useLocation } from '@/hooks/useLocation';
 import { useUpdateProfile } from '@/hooks/useProfiles';
 
 export function MotoristaDashboard({ user }: { user: Profile }) {
+  const router = useRouter();
   const { refreshProfile } = useAuth();
   const { data: ofertas = [], isLoading: loadingOfertas } = useOfertas(user.id);
   const { data: meus = [], isLoading: loadingMeus } = useFretesMotorista(user.id);
@@ -29,15 +33,32 @@ export function MotoristaDashboard({ user }: { user: Profile }) {
   const rejeitar = useRejeitarFrete();
   const iniciarViagem = useIniciarViagem();
   const concluirFrete = useConcluirFrete();
+  const syncGps = useSyncProgressoGps();
   const updateProfile = useUpdateProfile();
-  const { location: userLocation, refresh: refreshLocation } = useLocation({
-    enabled: true,
-    watch: Boolean(user.disponivel) || Boolean(meus.find((f) => f.status === 'aceito' || f.status === 'em_transito')),
-  });
+  const routeRef = useRef<{ lat: number; lng: number }[]>([]);
+  const lastSync = useRef(0);
 
   const ativo = meus.find((f) => f.status === 'aceito' || f.status === 'em_transito');
   const concluidos = meus.filter((f) => f.status === 'concluido');
   const ganho = concluidos.reduce((s, f) => s + Number(f.valor), 0);
+
+  const { location: userLocation, refresh: refreshLocation } = useLocation({
+    enabled: true,
+    watch: Boolean(user.disponivel) || Boolean(ativo),
+  });
+
+  useEffect(() => {
+    if (!ativo) {
+      routeRef.current = [];
+      return;
+    }
+    fetchRoute(
+      { lat: ativo.origem_lat, lng: ativo.origem_lng },
+      { lat: ativo.destino_lat, lng: ativo.destino_lng },
+    ).then((r) => {
+      routeRef.current = r.points;
+    });
+  }, [ativo?.id]);
 
   useEffect(() => {
     if (!userLocation || !user.disponivel) return;
@@ -50,6 +71,19 @@ export function MotoristaDashboard({ user }: { user: Profile }) {
       patch: { lat: userLocation.lat, lng: userLocation.lng },
     });
   }, [userLocation?.lat, userLocation?.lng, user.disponivel, user.id, user.lat, user.lng]);
+
+  useEffect(() => {
+    if (!ativo || ativo.status !== 'em_transito' || !userLocation) return;
+    if (routeRef.current.length < 2) return;
+    const now = Date.now();
+    if (now - lastSync.current < 12_000) return;
+    lastSync.current = now;
+    syncGps.mutate({
+      freteId: ativo.id,
+      gps: userLocation,
+      routePoints: routeRef.current,
+    });
+  }, [userLocation?.lat, userLocation?.lng, ativo?.id, ativo?.status]);
 
   const toggleDisponivel = async () => {
     try {
@@ -66,6 +100,10 @@ export function MotoristaDashboard({ user }: { user: Profile }) {
     } catch (e: any) {
       Alert.alert('Erro', e.message);
     }
+  };
+
+  const openPercurso = (freteId: string) => {
+    router.push({ pathname: '/(app)/percurso', params: { id: freteId } });
   };
 
   return (
@@ -96,9 +134,12 @@ export function MotoristaDashboard({ user }: { user: Profile }) {
             frete={ativo}
             userLocation={userLocation}
             showUser
-            height={300}
+            height={260}
+            simulate={ativo.status === 'em_transito'}
+            onOpenFullscreen={() => openPercurso(ativo.id)}
           />
           <FreteCard frete={ativo} viewerId={user.id} />
+          <Button title="Abrir mapa completo" variant="secondary" onPress={() => openPercurso(ativo.id)} />
           {ativo.status === 'aceito' && (
             <Button
               title="Iniciar viagem"
@@ -106,7 +147,7 @@ export function MotoristaDashboard({ user }: { user: Profile }) {
               onPress={async () => {
                 try {
                   await iniciarViagem.mutateAsync(ativo.id);
-                  Alert.alert('Em trânsito', 'Viagem iniciada. Boa entrega!');
+                  Alert.alert('Em trânsito', 'Viagem iniciada. O GPS atualiza o progresso.');
                 } catch (e: any) {
                   Alert.alert('Erro', e.message);
                 }
@@ -142,7 +183,8 @@ export function MotoristaDashboard({ user }: { user: Profile }) {
             frete={f}
             userLocation={userLocation ?? { lat: user.lat, lng: user.lng }}
             showUser
-            height={220}
+            height={200}
+            onOpenFullscreen={() => openPercurso(f.id)}
           />
         ))}
         {ofertas.map((f) => {

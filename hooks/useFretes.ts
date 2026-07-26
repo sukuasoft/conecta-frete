@@ -6,13 +6,24 @@ import {
   concluirFrete,
   criarFrete,
   fetchAllFretes,
+  fetchFreteById,
   fetchFretes,
   iniciarViagem,
   jaAvaliado,
   rejeitarFrete,
+  syncProgressoGps,
   type CriarFreteInput,
 } from '@/services/fretes';
 import type { FreteStatus } from '@/lib/types';
+
+export function useFrete(freteId?: string) {
+  return useQuery({
+    queryKey: ['fretes', 'one', freteId],
+    queryFn: () => fetchFreteById(freteId!),
+    enabled: Boolean(freteId),
+    refetchInterval: 8_000,
+  });
+}
 
 export function useMeusFretes(clienteId?: string) {
   return useQuery({
@@ -114,6 +125,24 @@ export function useConcluirFrete() {
       qc.invalidateQueries({ queryKey: ['fretes'] });
       qc.invalidateQueries({ queryKey: ['profiles'] });
       qc.invalidateQueries({ queryKey: ['notificacoes'] });
+    },
+  });
+}
+
+export function useSyncProgressoGps() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      freteId,
+      gps,
+      routePoints,
+    }: {
+      freteId: string;
+      gps: { lat: number; lng: number };
+      routePoints: { lat: number; lng: number }[];
+    }) => syncProgressoGps(freteId, gps, routePoints),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['fretes'] });
     },
   });
 }
