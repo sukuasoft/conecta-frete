@@ -4,20 +4,24 @@ import { formatKz } from '@/lib/angola';
 import type { Frete } from '@/lib/types';
 import { STATUS_LABEL } from '@/lib/types';
 import { statusColors } from '@/lib/utils';
+import { CallButton } from '@/components/CallButton';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Colors } from '@/constants/theme';
 import { useAvaliar, useJaAvaliado } from '@/hooks/useFretes';
+import { useProfile } from '@/hooks/useProfiles';
+import { toast } from '@/stores/toastStore';
 
 interface Props {
   frete: Frete;
   viewerId?: string;
   isCliente?: boolean;
+  showCall?: boolean;
 }
 
-export function FreteCard({ frete, viewerId, isCliente }: Props) {
+export function FreteCard({ frete, viewerId, isCliente, showCall = true }: Props) {
   const colors = statusColors(frete.status);
   const { data: avaliado } = useJaAvaliado(
     frete.status === 'concluido' && isCliente ? frete.id : undefined,
@@ -25,6 +29,14 @@ export function FreteCard({ frete, viewerId, isCliente }: Props) {
   const avaliar = useAvaliar();
   const [nota, setNota] = useState('5');
   const [comentario, setComentario] = useState('');
+
+  const counterpartyId = isCliente ? frete.motorista_id : frete.cliente_id;
+  const canShowCall =
+    showCall &&
+    Boolean(viewerId) &&
+    Boolean(counterpartyId) &&
+    (frete.status === 'aceito' || frete.status === 'em_transito');
+  const { data: counterparty } = useProfile(canShowCall ? counterpartyId : null);
 
   const showAvaliacao =
     isCliente &&
@@ -56,6 +68,13 @@ export function FreteCard({ frete, viewerId, isCliente }: Props) {
         </View>
       )}
 
+      {canShowCall && (
+        <CallButton
+          telefone={counterparty?.telefone}
+          nome={counterparty?.nome}
+        />
+      )}
+
       {showAvaliacao && (
         <View style={styles.avaliacao}>
           <Input
@@ -73,15 +92,21 @@ export function FreteCard({ frete, viewerId, isCliente }: Props) {
           <Button
             title="Enviar avaliação"
             loading={avaliar.isPending}
-            onPress={() =>
-              avaliar.mutate({
-                frete_id: frete.id,
-                motorista_id: frete.motorista_id!,
-                cliente_id: viewerId!,
-                nota: Math.min(5, Math.max(1, Number(nota) || 5)),
-                comentario,
-              })
-            }
+            onPress={() => {
+              avaliar.mutate(
+                {
+                  frete_id: frete.id,
+                  motorista_id: frete.motorista_id!,
+                  cliente_id: viewerId!,
+                  nota: Math.min(5, Math.max(1, Number(nota) || 5)),
+                  comentario,
+                },
+                {
+                  onSuccess: () => toast('Avaliação enviada', 'sucesso'),
+                  onError: (e: any) => toast(e.message ?? 'Erro ao avaliar', 'erro'),
+                },
+              );
+            }}
           />
         </View>
       )}

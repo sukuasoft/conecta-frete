@@ -6,6 +6,7 @@ import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 import 'react-native-reanimated';
 
 import { Colors } from '@/constants/theme';
+import { ToastHost } from '@/components/ui/Toast';
 import { useAuthStore } from '@/stores/authStore';
 
 const queryClient = new QueryClient({
@@ -47,9 +48,11 @@ export default function RootLayout() {
         <AuthBootstrap>
           <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: Colors.background } }}>
             <Stack.Screen name="index" />
+            <Stack.Screen name="onboarding" />
             <Stack.Screen name="(auth)" />
             <Stack.Screen name="(app)" />
           </Stack>
+          <ToastHost />
           <StatusBar style="light" />
         </AuthBootstrap>
       </ThemeProvider>

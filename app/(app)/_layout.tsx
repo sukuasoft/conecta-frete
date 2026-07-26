@@ -13,6 +13,10 @@ export default function AppLayout() {
     return <Redirect href="/(auth)/login" />;
   }
 
+  if (initialized && profile && !profile.onboarding_feito) {
+    return <Redirect href="/onboarding" />;
+  }
+
   return (
     <Tabs
       screenOptions={{

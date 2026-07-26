@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { CityPicker } from '@/components/CityPicker';
 import { FreteCard } from '@/components/FreteCard';
@@ -18,6 +18,7 @@ import { useCriarFrete, useMeusFretes } from '@/hooks/useFretes';
 import { useLocation } from '@/hooks/useLocation';
 import { useMotoristasOnline } from '@/hooks/useProfiles';
 import { matchMotoristas } from '@/services/profiles';
+import { toast } from '@/stores/toastStore';
 
 export function ClienteDashboard({ user }: { user: Profile }) {
   const router = useRouter();
@@ -75,7 +76,7 @@ export function ClienteDashboard({ user }: { user: Profile }) {
     const d = CIDADES_ANGOLA.find((c) => c.nome === destino);
     if (!o || !d) return;
     if (Number(peso) <= 0) {
-      Alert.alert('Erro', 'Peso inválido');
+      toast('Peso inválido', 'erro');
       return;
     }
     try {
@@ -95,13 +96,13 @@ export function ClienteDashboard({ user }: { user: Profile }) {
         valor: Number(valor),
         distancia_km: route.distanceKm,
       });
-      Alert.alert(
-        'Frete criado',
-        `${(frete.candidatos ?? []).length} motoristas notificados` +
-          (route.fallback ? ' (distância aproximada em linha reta).' : '.'),
+      toast(
+        `Frete criado · ${(frete.candidatos ?? []).length} motoristas notificados` +
+          (route.fallback ? ' (dist. aproximada)' : ''),
+        'sucesso',
       );
     } catch (e: any) {
-      Alert.alert('Erro', e.message ?? 'Não foi possível criar o frete');
+      toast(e.message ?? 'Não foi possível criar o frete', 'erro');
     }
   };
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { FreteCard } from '@/components/FreteCard';
 import { FreteMap } from '@/components/FreteMap';
@@ -23,6 +23,7 @@ import {
 } from '@/hooks/useFretes';
 import { useLocation } from '@/hooks/useLocation';
 import { useUpdateProfile } from '@/hooks/useProfiles';
+import { toast } from '@/stores/toastStore';
 
 export function MotoristaDashboard({ user }: { user: Profile }) {
   const router = useRouter();
@@ -97,8 +98,9 @@ export function MotoristaDashboard({ user }: { user: Profile }) {
         },
       });
       await refreshProfile();
+      toast(nextOnline ? 'Estás online' : 'Ficaste offline', 'info');
     } catch (e: any) {
-      Alert.alert('Erro', e.message);
+      toast(e.message ?? 'Erro ao atualizar disponibilidade', 'erro');
     }
   };
 
@@ -147,9 +149,9 @@ export function MotoristaDashboard({ user }: { user: Profile }) {
               onPress={async () => {
                 try {
                   await iniciarViagem.mutateAsync(ativo.id);
-                  Alert.alert('Em trânsito', 'Viagem iniciada. O GPS atualiza o progresso.');
+                  toast('Viagem iniciada · GPS atualiza o progresso', 'sucesso');
                 } catch (e: any) {
-                  Alert.alert('Erro', e.message);
+                  toast(e.message ?? 'Erro ao iniciar viagem', 'erro');
                 }
               }}
             />
@@ -162,9 +164,9 @@ export function MotoristaDashboard({ user }: { user: Profile }) {
                 try {
                   await concluirFrete.mutateAsync({ freteId: ativo.id, motoristaId: user.id });
                   await refreshProfile();
-                  Alert.alert('Concluído', 'Frete entregue. Já podes ficar online outra vez.');
+                  toast('Frete entregue com sucesso', 'sucesso');
                 } catch (e: any) {
-                  Alert.alert('Erro', e.message);
+                  toast(e.message ?? 'Erro ao concluir frete', 'erro');
                 }
               }}
             />
@@ -218,9 +220,9 @@ export function MotoristaDashboard({ user }: { user: Profile }) {
                   onPress={async () => {
                     try {
                       await aceitar.mutateAsync({ freteId: f.id, motoristaId: user.id });
-                      Alert.alert('Aceite', 'Frete aceite com sucesso.');
+                      toast('Frete aceite', 'sucesso');
                     } catch (e: any) {
-                      Alert.alert('Erro', e.message);
+                      toast(e.message ?? 'Erro ao aceitar frete', 'erro');
                     }
                   }}
                 />

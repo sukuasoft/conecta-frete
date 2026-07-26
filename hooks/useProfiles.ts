@@ -2,12 +2,21 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   createAdminProfile,
   fetchMotoristasDisponiveis,
+  fetchProfile,
   fetchProfiles,
   toggleBloqueio,
   updateProfile,
 } from '@/services/profiles';
 import type { Profile } from '@/lib/types';
 import { useAuthStore } from '@/stores/authStore';
+
+export function useProfile(userId?: string | null) {
+  return useQuery({
+    queryKey: ['profiles', 'one', userId],
+    queryFn: () => fetchProfile(userId!),
+    enabled: Boolean(userId),
+  });
+}
 
 export function useMotoristasOnline() {
   return useQuery({

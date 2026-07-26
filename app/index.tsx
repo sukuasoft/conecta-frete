@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { isSupabaseConfigured } from '@/lib/supabase';
 
 export default function Index() {
-  const { isAuthenticated, initialized, loading } = useAuth();
+  const { isAuthenticated, initialized, loading, profile } = useAuth();
 
   if (!initialized || loading) {
     return (
@@ -20,6 +20,9 @@ export default function Index() {
   }
 
   if (isAuthenticated) {
+    if (profile && !profile.onboarding_feito) {
+      return <Redirect href="/onboarding" />;
+    }
     return <Redirect href="/(app)" />;
   }
 

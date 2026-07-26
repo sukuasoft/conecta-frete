@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { FreteCard } from '@/components/FreteCard';
 import { StatCard } from '@/components/StatCard';
 import { Button } from '@/components/ui/Button';
@@ -12,6 +12,7 @@ import type { Profile } from '@/lib/types';
 import { useAllFretes } from '@/hooks/useFretes';
 import { useBroadcast } from '@/hooks/useNotificacoes';
 import { useAllProfiles, useToggleBloqueio } from '@/hooks/useProfiles';
+import { toast } from '@/stores/toastStore';
 
 export function AdminDashboard({ user }: { user: Profile }) {
   const { data: profiles = [], isLoading: loadingProfiles } = useAllProfiles(true);
@@ -79,10 +80,10 @@ export function AdminDashboard({ user }: { user: Profile }) {
           onPress={async () => {
             try {
               const n = await broadcast.mutateAsync(broadcastForm);
-              Alert.alert('Enviado', `${n} utilizadores notificados.`);
+              toast(`${n} utilizadores notificados`, 'sucesso');
               setBroadcastForm({ titulo: '', mensagem: '', alvo: 'todos' });
             } catch (e: any) {
-              Alert.alert('Erro', e.message);
+              toast(e.message ?? 'Erro no broadcast', 'erro');
             }
           }}
         />

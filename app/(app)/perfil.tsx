@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -8,6 +8,7 @@ import { Screen } from '@/components/ui/Screen';
 import { Colors } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { useUpdateProfile } from '@/hooks/useProfiles';
+import { toast } from '@/stores/toastStore';
 
 export default function PerfilScreen() {
   const { profile, signOut } = useAuth();
@@ -39,9 +40,9 @@ export default function PerfilScreen() {
             : {}),
         },
       });
-      Alert.alert('Guardado', 'Perfil atualizado.');
+      toast('Perfil atualizado', 'sucesso');
     } catch (e: any) {
-      Alert.alert('Erro', e.message);
+      toast(e.message ?? 'Erro ao guardar', 'erro');
     }
   };
 
@@ -60,13 +61,16 @@ export default function PerfilScreen() {
         </View>
         <Text style={styles.name}>{profile.nome}</Text>
         <Text style={styles.email}>{profile.email}</Text>
-       <View style={styles.center}>
-        <Badge
+        {profile.telefone ? (
+          <Text style={styles.phone}>{profile.telefone}</Text>
+        ) : null}
+        <View style={styles.center}>
+          <Badge
             label={profile.tipo}
             bg={Colors.primary}
             color={Colors.primaryForeground}
           />
-       </View>
+        </View>
         {profile.bloqueado && (
           <Text style={styles.blocked}>Conta bloqueada</Text>
         )}
@@ -74,7 +78,13 @@ export default function PerfilScreen() {
 
       <Card style={styles.form}>
         <Input label="Nome" value={nome} onChangeText={setNome} />
-        <Input label="Telefone" value={telefone} onChangeText={setTelefone} />
+        <Input
+          label="Telefone"
+          value={telefone}
+          onChangeText={setTelefone}
+          placeholder="+244 9XX XXX XXX"
+          keyboardType="phone-pad"
+        />
         <Input label="Bio" value={bio} onChangeText={setBio} />
         {profile.tipo === 'motorista' && (
           <>
@@ -126,6 +136,7 @@ const styles = StyleSheet.create({
   },
   name: { color: Colors.foreground, fontSize: 20, fontWeight: '800' },
   email: { color: Colors.mutedForeground },
+  phone: { color: Colors.primary, fontWeight: '600' },
   blocked: { color: Colors.destructive, fontWeight: '700' },
   form: { gap: 12 },
   meta: { color: Colors.mutedForeground, fontSize: 13 },
