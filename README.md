@@ -34,9 +34,11 @@ npm install
 npx expo start
 ```
 
-## Autenticação
+## Mapa e localização
 
-Login e registo usam **apenas a tabela `profiles`**. A senha é guardada com **hash bcrypt** (`senha_hash`) — nunca em texto plano.
+- Tiles **OpenStreetMap** (via CARTO — os servidores oficiais OSM bloqueiam apps)
+- Rotas por estrada via **OSRM**
+- GPS do dispositivo (`expo-location`) para o ponto do utilizador e posição do motorista online
 
 ## Primeiro admin
 

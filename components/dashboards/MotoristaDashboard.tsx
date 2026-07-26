@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { FreteCard } from '@/components/FreteCard';
+import { FreteMap } from '@/components/FreteMap';
 import { StatCard } from '@/components/StatCard';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -16,6 +18,7 @@ import {
   useOfertas,
   useRejeitarFrete,
 } from '@/hooks/useFretes';
+import { useLocation } from '@/hooks/useLocation';
 import { useUpdateProfile } from '@/hooks/useProfiles';
 
 export function MotoristaDashboard({ user }: { user: Profile }) {
@@ -27,17 +30,39 @@ export function MotoristaDashboard({ user }: { user: Profile }) {
   const iniciarViagem = useIniciarViagem();
   const concluirFrete = useConcluirFrete();
   const updateProfile = useUpdateProfile();
+  const { location: userLocation, refresh: refreshLocation } = useLocation({
+    enabled: true,
+    watch: Boolean(user.disponivel) || Boolean(meus.find((f) => f.status === 'aceito' || f.status === 'em_transito')),
+  });
 
   const ativo = meus.find((f) => f.status === 'aceito' || f.status === 'em_transito');
   const concluidos = meus.filter((f) => f.status === 'concluido');
   const ganho = concluidos.reduce((s, f) => s + Number(f.valor), 0);
 
+  useEffect(() => {
+    if (!userLocation || !user.disponivel) return;
+    const moved =
+      Math.abs(userLocation.lat - user.lat) > 0.0008 ||
+      Math.abs(userLocation.lng - user.lng) > 0.0008;
+    if (!moved) return;
+    updateProfile.mutate({
+      userId: user.id,
+      patch: { lat: userLocation.lat, lng: userLocation.lng },
+    });
+  }, [userLocation?.lat, userLocation?.lng, user.disponivel, user.id, user.lat, user.lng]);
+
   const toggleDisponivel = async () => {
     try {
+      const nextOnline = !user.disponivel;
+      const loc = nextOnline ? (await refreshLocation()) ?? userLocation : null;
       await updateProfile.mutateAsync({
         userId: user.id,
-        patch: { disponivel: !user.disponivel },
+        patch: {
+          disponivel: nextOnline,
+          ...(loc ? { lat: loc.lat, lng: loc.lng } : {}),
+        },
       });
+      await refreshProfile();
     } catch (e: any) {
       Alert.alert('Erro', e.message);
     }
@@ -67,6 +92,12 @@ export function MotoristaDashboard({ user }: { user: Profile }) {
       {ativo && (
         <View style={styles.block}>
           <Text style={styles.section}>Entrega em andamento</Text>
+          <FreteMap
+            frete={ativo}
+            userLocation={userLocation}
+            showUser
+            height={300}
+          />
           <FreteCard frete={ativo} viewerId={user.id} />
           {ativo.status === 'aceito' && (
             <Button
@@ -105,11 +136,21 @@ export function MotoristaDashboard({ user }: { user: Profile }) {
         {ofertas.length === 0 && (
           <Text style={styles.empty}>Nenhuma oferta no momento. Fique online.</Text>
         )}
+        {ofertas.slice(0, 1).map((f) => (
+          <FreteMap
+            key={`map-${f.id}`}
+            frete={f}
+            userLocation={userLocation ?? { lat: user.lat, lng: user.lng }}
+            showUser
+            height={220}
+          />
+        ))}
         {ofertas.map((f) => {
-          const dist = haversineKm(
-            { lat: user.lat, lng: user.lng },
-            { lat: f.origem_lat, lng: f.origem_lng },
-          );
+          const from = userLocation ?? { lat: user.lat, lng: user.lng };
+          const dist = haversineKm(from, {
+            lat: f.origem_lat,
+            lng: f.origem_lng,
+          });
           return (
             <Card key={f.id} style={styles.offer}>
               <Text style={styles.rota}>

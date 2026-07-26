@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { CityPicker } from '@/components/CityPicker';
 import { FreteCard } from '@/components/FreteCard';
+import { FreteMap } from '@/components/FreteMap';
 import { StatCard } from '@/components/StatCard';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -12,12 +13,14 @@ import { CIDADES_ANGOLA, formatKz, haversineKm } from '@/lib/angola';
 import type { Profile } from '@/lib/types';
 import { TIPOS_CARGA } from '@/lib/types';
 import { useCriarFrete, useMeusFretes } from '@/hooks/useFretes';
+import { useLocation } from '@/hooks/useLocation';
 import { useMotoristasOnline } from '@/hooks/useProfiles';
 import { matchMotoristas } from '@/services/profiles';
 
 export function ClienteDashboard({ user }: { user: Profile }) {
   const { data: fretes = [], isLoading } = useMeusFretes(user.id);
   const { data: motoristas = [] } = useMotoristasOnline();
+  const { location: userLocation } = useLocation({ enabled: true });
   const criar = useCriarFrete();
 
   const [origem, setOrigem] = useState('Luanda');
@@ -38,7 +41,7 @@ export function ClienteDashboard({ user }: { user: Profile }) {
       { origem: o, peso_kg: Number(peso) || 0 },
       motoristas,
     );
-    return { dist, candidatos };
+    return { o, d, dist, candidatos };
   }, [origem, destino, peso, motoristas]);
 
   const solicitar = async () => {
@@ -85,6 +88,30 @@ export function ClienteDashboard({ user }: { user: Profile }) {
         <StatCard label="Online" value={`${motoristas.length}`} sub="motoristas" />
         <StatCard label="Fretes" value={`${fretes.length}`} sub="no total" />
       </View>
+
+      {ativo ? (
+        <View style={styles.block}>
+          <Text style={styles.section}>Percurso em andamento</Text>
+          <FreteMap
+            frete={ativo}
+            userLocation={userLocation}
+            showUser
+            height={300}
+          />
+        </View>
+      ) : (
+        <View style={styles.block}>
+          <Text style={styles.section}>Pré-visualização do percurso</Text>
+          <FreteMap
+            origem={preview?.o ?? null}
+            destino={preview?.d ?? null}
+            motoristas={preview?.candidatos ?? []}
+            userLocation={userLocation}
+            showUser
+            height={260}
+          />
+        </View>
+      )}
 
       <Card style={styles.form}>
         <Text style={styles.section}>Novo pedido</Text>
