@@ -5,19 +5,22 @@ import { useAuth } from '@/hooks/useAuth';
 export default function AuthLayout() {
   const { isAuthenticated, initialized, profile } = useAuth();
 
-  if (initialized && isAuthenticated) {
-    if (profile && !profile.onboarding_feito) {
-      return <Redirect href="/onboarding" />;
-    }
-    return <Redirect href="/(app)" />;
-  }
+  const redirectTo =
+    initialized && isAuthenticated
+      ? profile && !profile.onboarding_feito
+        ? '/onboarding'
+        : '/(app)'
+      : null;
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: { backgroundColor: Colors.background },
-      }}
-    />
+    <>
+      {redirectTo ? <Redirect href={redirectTo} /> : null}
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: Colors.background },
+        }}
+      />
+    </>
   );
 }

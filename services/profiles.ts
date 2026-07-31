@@ -35,7 +35,7 @@ export async function login(email: string, password: string) {
     .maybeSingle();
 
   if (error) throw error;
-  if (!data || !verifyPassword(password, data.senha_hash)) {
+  if (!data || !(await verifyPassword(password, data.senha_hash))) {
     throw new Error('Credenciais inválidas');
   }
   if (data.bloqueado) {
@@ -56,12 +56,14 @@ export async function register(input: RegisterInput) {
 
   if (existing) throw new Error('E-mail já registado.');
 
+  const senha_hash = await hashPassword(input.password);
+
   const { data, error } = await supabase
     .from('profiles')
     .insert({
       nome: input.nome,
       email,
-      senha_hash: hashPassword(input.password),
+      senha_hash,
       tipo: input.tipo,
       telefone: input.telefone ?? null,
       cidade: input.cidade ?? null,
@@ -149,10 +151,12 @@ export async function createAdminProfile(input: {
 
   if (existing) throw new Error('E-mail já registado.');
 
+  const senha_hash = await hashPassword(input.password);
+
   const { error } = await supabase.from('profiles').insert({
     nome: input.nome,
     email,
-    senha_hash: hashPassword(input.password),
+    senha_hash,
     tipo: 'admin',
     telefone: input.telefone ?? null,
     lat: -8.839,

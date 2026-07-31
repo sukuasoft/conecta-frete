@@ -9,16 +9,17 @@ export default function AppLayout() {
   const { data: notifs = [] } = useNotificacoes(profile?.id);
   const unread = notifs.filter((n) => !n.lida).length;
 
-  if (initialized && !isAuthenticated) {
-    return <Redirect href="/(auth)/login" />;
-  }
-
-  if (initialized && profile && !profile.onboarding_feito) {
-    return <Redirect href="/onboarding" />;
-  }
+  const redirectTo =
+    initialized && !isAuthenticated
+      ? '/(auth)/login'
+      : initialized && profile && !profile.onboarding_feito
+        ? '/onboarding'
+        : null;
 
   return (
-    <Tabs
+    <>
+      {redirectTo ? <Redirect href={redirectTo} /> : null}
+      <Tabs
       screenOptions={{
         headerStyle: { backgroundColor: Colors.background },
         headerTintColor: Colors.foreground,
@@ -71,5 +72,6 @@ export default function AppLayout() {
         }}
       />
     </Tabs>
+    </>
   );
 }

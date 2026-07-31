@@ -1,3 +1,4 @@
+import { useContext } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -9,7 +10,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import { useHeaderHeight } from '@react-navigation/elements';
+import { HeaderHeightContext } from '@react-navigation/elements';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing } from '@/constants/theme';
 
@@ -31,7 +32,8 @@ export function Screen({
   contentContainerStyle,
   ...props
 }: Props) {
-  const headerHeight = useHeaderHeight();
+  // useHeaderHeight() throws if the navigator/header is unmounting (e.g. after login/register redirect)
+  const headerHeight = useContext(HeaderHeightContext) ?? 0;
   const insets = useSafeAreaInsets();
 
   const verticalOffset =
